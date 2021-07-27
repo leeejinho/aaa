@@ -9,6 +9,8 @@ public:
 	LPDIRECT3DDEVICE9 Get_Device() { return m_pDevice; }
 	LPD3DXSPRITE Get_Sprite() { return m_pSprite;  }
 	LPD3DXFONT Get_Font() { return m_pFont; }
+	LPD3DXLINE Get_Line() { return m_pLine; }
+
 public:
 	HRESULT Ready_Graphic_Device(); 
 	void Release_Graphic_Device(); 
@@ -23,6 +25,7 @@ private:
 	LPDIRECT3DDEVICE9 m_pDevice; // 장치를 제어하는 컴객체. 
 	LPD3DXSPRITE	m_pSprite; 
 	LPD3DXFONT		m_pFont; 
+	LPD3DXLINE		m_pLine;
 
 };
 

@@ -30,4 +30,6 @@ public:
 	CString m_pObjectKey;
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton6();
+	afx_msg void OnBnClickedRemove();
+	CButton m_Radio[2];
 };

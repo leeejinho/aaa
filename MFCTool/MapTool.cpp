@@ -10,6 +10,10 @@
 #include "MainFrm.h"
 #include "MFCToolView.h"
 #include "Terrain.h"
+#include "WallMgr.h"
+#include "Wall.h"
+#include "LineMgr.h"
+#include "Line.h"
 
 // CMapTool 대화 상자입니다.
 
@@ -31,6 +35,8 @@ void CMapTool::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST1, m_ListBox);
 	DDX_Control(pDX, IDC_PICTURE, m_Picture);
+	DDX_Control(pDX, IDC_RADIO1, m_Radio[0]);
+	DDX_Control(pDX, IDC_RADIO2, m_Radio[1]);
 }
 
 
@@ -39,6 +45,7 @@ BEGIN_MESSAGE_MAP(CMapTool, CDialog)
 	ON_LBN_SELCHANGE(IDC_LIST1, &CMapTool::OnLbnSelchangePicture)
 	ON_BN_CLICKED(IDC_BUTTON1, &CMapTool::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON6, &CMapTool::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON7, &CMapTool::OnBnClickedRemove)
 END_MESSAGE_MAP()
 
 
@@ -132,11 +139,24 @@ void CMapTool::OnBnClickedButton1()
 			return;
 
 		DWORD dwByte = 0;
-		CMainFrame* pMain = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd()); 
-		CMFCToolView* pView = dynamic_cast<CMFCToolView*>(pMain->m_tMainSplitter.GetPane(0, 1)); 
-		const vector<TILE*>& vecTileData = pView->m_pTerrain->Get_TileData();
-		for (auto& pTile : vecTileData)
-			WriteFile(hFile, pTile, sizeof(TILE), &dwByte, nullptr);
+		if(m_Radio[0].GetCheck())
+		{
+			list<CLine*>& listLine = CLineMgr::Get_Instance()->Get_List();
+			for (auto& pLine : listLine)
+			{
+				WriteFile(hFile, pLine->Get_LinePos(0), sizeof(D3DXVECTOR2), &dwByte, nullptr);
+				WriteFile(hFile, pLine->Get_LinePos(1), sizeof(D3DXVECTOR2), &dwByte, nullptr);
+			}
+		}
+		else if(m_Radio[1].GetCheck())
+		{
+			list<CWall*>& listWall = CWallMgr::Get_Instance()->Get_List();
+			for (auto& pLine : listWall)
+			{
+				WriteFile(hFile, pLine->Get_RectPos(0), sizeof(D3DXVECTOR2), &dwByte, nullptr);
+				WriteFile(hFile, pLine->Get_RectPos(2), sizeof(D3DXVECTOR2), &dwByte, nullptr);
+			}
+		}
 
 		CloseHandle(hFile); 
 	}
@@ -164,27 +184,46 @@ void CMapTool::OnBnClickedButton6()
 
 		if (INVALID_HANDLE_VALUE == hFile)
 			return;
+		
+		//CMainFrame* pMain = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+		//CMFCToolView* pView = dynamic_cast<CMFCToolView*>(pMain->m_tMainSplitter.GetPane(0, 1));
 
-
-		CMainFrame* pMain = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
-		CMFCToolView* pView = dynamic_cast<CMFCToolView*>(pMain->m_tMainSplitter.GetPane(0, 1));
-		vector<TILE*>& vecTileData = pView->m_pTerrain->Get_TileData();
-		for (auto& pTile : vecTileData)
-			Safe_Delete(pTile); 
-		// 미리 말하는데 이딴식으로 쓰면 썩 좋지 않은 방법. 
-		//은닉화 파궤한다!! ㅇㅋ? 
-		vecTileData.clear(); 
+		if (m_Radio[0].GetCheck())
+			CLineMgr::Get_Instance()->Release_Line();
+		else if (m_Radio[1].GetCheck())
+			CWallMgr::Get_Instance()->Release_Wall();
 		DWORD dwByte = 0;
+		D3DXVECTOR2 vTemp[2] = {};
 		TILE* pTile = nullptr; 
 		while (true)
-		{
-			pTile = new TILE; 
-			ReadFile(hFile, pTile, sizeof(TILE), &dwByte, nullptr); 
+		{						
+			ReadFile(hFile, vTemp[0], sizeof(D3DXVECTOR2), &dwByte, nullptr);
+			ReadFile(hFile, vTemp[1], sizeof(D3DXVECTOR2), &dwByte, nullptr);
+			
 			if (0 == dwByte)
-				break; 
-			vecTileData.emplace_back(pTile); 
+				break;
+
+			if (m_Radio[0].GetCheck())
+				CLineMgr::Get_Instance()->Add_Line(new CLine(vTemp[0], vTemp[1]));
+			else if (m_Radio[1].GetCheck())
+				CWallMgr::Get_Instance()->Add_Wall(CWall::Create(vTemp[0], vTemp[1]));			
 		}
-		pView->Invalidate(TRUE); 
+
+		//pView->Invalidate(TRUE);
 		CloseHandle(hFile);
+	}
+}
+
+
+void CMapTool::OnBnClickedRemove()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	if (m_Radio[0].GetCheck())
+	{
+		CLineMgr::Get_Instance()->Pop_Back();
+	}
+	else if (m_Radio[1].GetCheck())
+	{
+		CWallMgr::Get_Instance()->Pop_Back();
 	}
 }

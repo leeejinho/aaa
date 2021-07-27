@@ -73,6 +73,9 @@ HRESULT CGraphic_Device::Ready_Graphic_Device()
 	 if (FAILED(D3DXCreateFontIndirectW(m_pDevice, &tFontInfo, &m_pFont)))
 		 goto ERR; 
 
+	 if (FAILED(D3DXCreateLine(m_pDevice, &m_pLine)))
+		 goto ERR;
+
 	return S_OK;
 ERR:
 	ERR_MSG(L"System Error - Graphic_Device");
@@ -81,10 +84,9 @@ ERR:
 
 void CGraphic_Device::Release_Graphic_Device()
 {
-	// 순서 중요. 레퍼런스 카운트 라는 기법을 사용하고 있기 때문에 순서가 맞춰지지 않으면 
-	// 제대로 지워 지지 않는다. 
-	// 그래서 내가 지금 말한대로 디바이스에서 SDK를 참조하여 사용하고 있기 때문에. 
-	// 참조하는 대상먼저. 제거 되야 . 다음 제대로 지워질수 있다. 
+	if (m_pLine)
+		m_pLine->Release();
+
 	if (m_pFont)
 		m_pFont->Release(); 
 
@@ -103,12 +105,13 @@ void CGraphic_Device::Render_Begin()
 	m_pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(255, 0, 0, 255), 1.f, 0);
 	m_pDevice->BeginScene();
 	m_pSprite->Begin(D3DXSPRITE_ALPHABLEND);
-
-	
+	m_pLine->SetWidth(2.f);
+	m_pLine->Begin();	
 }
 
 void CGraphic_Device::Render_End(HWND hWnd /*= nullptr*/)
 {
+	m_pLine->End();
 	m_pSprite->End();
 	m_pDevice->EndScene();
 	m_pDevice->Present(nullptr, nullptr, hWnd, nullptr);
