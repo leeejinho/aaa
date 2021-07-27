@@ -6,6 +6,7 @@
 #include "UnitTool.h"
 #include "MapTool.h"
 #include "ObjectTool.h"
+#include "MapToolTab.h"
 class CForm : public CFormView
 {
 	DECLARE_DYNCREATE(CForm)
@@ -16,6 +17,7 @@ protected:
 public:
 	CUnitTool m_tUnitTool;
 	CMapTool m_tMapTool; 
+	CMapToolTab m_tMapToolTab;
 	CObjectTool m_tObjectTool;
 public:
 #ifdef AFX_DESIGN_TIME

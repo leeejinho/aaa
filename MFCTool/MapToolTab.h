@@ -4,7 +4,7 @@
 
 // CMapToolTab 대화 상자입니다.
 #include "MapTool.h"
-class CMapToolTab : public CDialogEx
+class CMapToolTab : public CDialog
 {
 	DECLARE_DYNAMIC(CMapToolTab)
 
@@ -13,7 +13,7 @@ public:
 	virtual ~CMapToolTab();
 public:
 	CMapTool* m_pMapTool;
-// 대화 상자 데이터입니다.
+	// 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_MAPTOOLTAB };
 #endif

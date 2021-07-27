@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by MFCTool.rc
+// Microsoft Visual C++에서 생성한 포함 파일입니다.
+// MFCTool.rc에서 사용되고 있습니다.
 //
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
@@ -10,6 +10,7 @@
 #define IDD_UNITTOOL                    311
 #define IDD_MAPTOOL                     312
 #define IDD_OBJECTTOOL                  313
+#define IDD_MAPTOOLTAB                  314
 #define IDC_BUTTON1                     1000
 #define IDC_EDIT1                       1001
 #define IDC_BUTTON6                     1001
@@ -37,15 +38,16 @@
 #define IDC_BUTTON3                     1017
 #define IDC_PICTURE2                    1017
 #define IDC_BUTTON4                     1018
+#define IDC_TAB1                        1018
 #define IDC_BUTTON5                     1019
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        314
+#define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1017
-#define _APS_NEXT_SYMED_VALUE           314
+#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_SYMED_VALUE           315
 #endif
 #endif

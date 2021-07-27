@@ -11,7 +11,7 @@
 IMPLEMENT_DYNAMIC(CMapToolTab, CDialog)
 
 CMapToolTab::CMapToolTab(CWnd* pParent /*=NULL*/)
-	: CDialogEx(IDD_MAPTOOLTAB, pParent)
+	: CDialog(IDD_MAPTOOLTAB, pParent)
 {
 
 }
@@ -58,10 +58,10 @@ BOOL CMapToolTab::OnInitDialog()
 	// TODO:  여기에 추가 초기화 작업을 추가합니다.
 	CRect rc;
 	m_Tab.GetWindowRect(rc);
-	
+
 	m_Tab.InsertItem(0, L"MapTool");
 	//m_Tab.InsertItem(1, L"test");
-	
+
 	m_Tab.SetCurSel(0);
 
 	m_pMapTool = new CMapTool;
@@ -79,5 +79,5 @@ void CMapToolTab::OnCancel()
 	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
 	for (int i = 0; i < 2; ++i)
 		m_pMapTool->m_Radio[i].SetCheck(FALSE);
-	CDialogEx::OnCancel();
+	CDialog::OnCancel();
 }

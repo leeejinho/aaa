@@ -66,10 +66,10 @@ void CForm::OnBnClickedUnitTool()
 void CForm::OnBnClickedButton6()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	if (m_tMapTool.GetSafeHwnd() == nullptr)
-		m_tMapTool.Create(IDD_MAPTOOL);
+	if (m_tMapToolTab.GetSafeHwnd() == nullptr)
+		m_tMapToolTab.Create(IDD_MAPTOOLTAB);
 
-	m_tMapTool.ShowWindow(SW_SHOW);
+	m_tMapToolTab.ShowWindow(SW_SHOW);
 }
 
 

@@ -17,6 +17,8 @@
 #include "Form.h"
 #include "MapTool.h"
 #include "MyObject.h"
+#include "LineMgr.h"
+#include "WallMgr.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,7 +50,8 @@ CMFCToolView::CMFCToolView()
 
 CMFCToolView::~CMFCToolView()
 {
-	//m_pTerrain->Release_Terrain(); 
+	CLineMgr::Destroy_Instance();
+	CWallMgr::Destroy_Instance();
 	CTexture_Manager::Destroy_Instance();
 	CGraphic_Device::Destroy_Instance(); 
 }
@@ -70,45 +73,38 @@ void CMFCToolView::OnDraw(CDC* /*pDC*/)
 	if (!pDoc)
 		return;
 
+	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+	CForm* pForm = dynamic_cast<CForm*>(pMainFrame->m_tSecondSplitter.GetPane(1, 0));
+	TCHAR* pObjectKey = L"";
+	if (pForm->m_tMapToolTab.m_pMapTool != nullptr)
+		pObjectKey = (TCHAR*)(LPCTSTR)(pForm->m_tMapToolTab.m_pMapTool->m_pObjectKey);
+
 	CGraphic_Device::Get_Instance()->Render_Begin();
 
-	//m_pTerrain->Render_Terrain(); 
+	const TEXINFO* pTexInfo = CTexture_Manager::Get_Instance()->Get_TexInfo_Texture(pObjectKey);
+	if (pTexInfo != nullptr)
+	{
+		D3DXMATRIX matScale, matRotZ, matTrans, matWorld;
+		// 이미지 반전 개꿀. 
+		D3DXMatrixScaling(&matScale, 1.f, 1.f, 0.f);
+		//D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(m_fAngle));
+		D3DXMatrixTranslation(&matTrans, -GetScrollPos(SB_HORZ), -GetScrollPos(SB_VERT), 0.f);
+		matWorld = matScale * /*matRotZ * */matTrans;
+
+		float fCenterX = pTexInfo->tImageInfo.Width >> 1;
+		float fCenterY = pTexInfo->tImageInfo.Height >> 1;
+		RECT rc{ 0, 0, 400, 300 };
+		CGraphic_Device::Get_Instance()->Get_Sprite()->SetTransform(&matWorld);
+		CGraphic_Device::Get_Instance()->Get_Sprite()->Draw(pTexInfo->pTexture, nullptr, nullptr/*&D3DXVECTOR3(fCenterX, fCenterY, 0.f)*/, nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
+
+	}
+
 	m_pMyObject->Render();
+	CLineMgr::Get_Instance()->Render_Line();
+	CWallMgr::Get_Instance()->Render_Wall();
+	Invalidate(FALSE);
 	CGraphic_Device::Get_Instance()->Render_End();
 
- //	m_fAngle += 5.f; 
- //	++m_iDrawID;
- //	if (m_iDrawID > m_iMaxDrawID)
- //	{
- //		m_iDrawID = 0; 
- //	}
-
-	//CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
-	//CForm* pForm = dynamic_cast<CForm*>(pMainFrame->m_tSecondSplitter.GetPane(1, 0));
-	//TCHAR* pObjectKey = (TCHAR*)(LPCTSTR)(pForm->m_tMapTool.m_pObjectKey);
-	//	
- //	CGraphic_Device::Get_Instance()->Render_Begin();
- // 	
-	//const TEXINFO* pTexInfo = CTexture_Manager::Get_Instance()->Get_TexInfo_Texture(pObjectKey);
-	//if (pTexInfo != nullptr)
-	//{
-	//	D3DXMATRIX matScale, matRotZ, matTrans, matWorld;
-	//	// 이미지 반전 개꿀. 
-	//	D3DXMatrixScaling(&matScale, 1.f, 1.f, 0.f);
-	//	//D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(m_fAngle));
-	//	D3DXMatrixTranslation(&matTrans, -GetScrollPos(SB_HORZ), -GetScrollPos(SB_VERT), 0.f);
-	//	matWorld = matScale * /*matRotZ * */matTrans;
-
-	//	float fCenterX = pTexInfo->tImageInfo.Width >> 1;
-	//	float fCenterY = pTexInfo->tImageInfo.Height >> 1;
-	//	RECT rc{ 0, 0, 400, 300 };
-	//	CGraphic_Device::Get_Instance()->Get_Sprite()->SetTransform(&matWorld);
-	//	CGraphic_Device::Get_Instance()->Get_Sprite()->Draw(pTexInfo->pTexture, nullptr, nullptr/*&D3DXVECTOR3(fCenterX, fCenterY, 0.f)*/, nullptr, D3DCOLOR_ARGB(255, 255, 255, 255));
-	//}
- //	CGraphic_Device::Get_Instance()->Render_End(); 
-	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
-// 	pDC->Rectangle(100, 100, 200, 200); 
-// 	pDC->Ellipse(100, 100, 200, 200); 
 }
 
 
@@ -207,24 +203,26 @@ void CMFCToolView::OnInitialUpdate()
 
 void CMFCToolView::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	TCHAR szBuf[MAX_PATH]{}; 
- 	// 문자열 대상 출력하는 함수. 
- 	//swprintf_s(szBuf, L"X : %d, Y : %d", point.x, point.y);
- 
- 	//ERR_MSG(szBuf); 
+
 	D3DXVECTOR3 vMouse{ float(point.x) + GetScrollPos(SB_HORZ), float(point.y) + GetScrollPos(SB_VERT), 0.f };
 	
 	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
 	CForm* pForm = dynamic_cast<CForm*>(pMainFrame->m_tSecondSplitter.GetPane(1, 0)); 
 	DWORD dwDrawID = pForm->m_tObjectTool.m_dwDrawID;
 
+	if (pForm->m_tMapToolTab.m_pMapTool != nullptr)
+	{
+		if (pForm->m_tMapToolTab.m_pMapTool->m_Radio[0].GetCheck())
+			CLineMgr::Get_Instance()->Add_Line(vMouse);
+		else if (pForm->m_tMapToolTab.m_pMapTool->m_Radio[1].GetCheck())
+			CWallMgr::Get_Instance()->Add_Wall(vMouse);
+	}
+
 	m_pMyObject->Set_PosX(vMouse.x);
 	m_pMyObject->Set_PosY(vMouse.y);
 
 	Invalidate(FALSE); 
-	
-	/*CMiniView* pMiniView = dynamic_cast<CMiniView*>(pMainFrame->m_tSecondSplitter.GetPane(0, 0));
-	pMiniView->Invalidate(FALSE); */
+
 
 	CScrollView::OnLButtonDown(nFlags, point);
 }
